@@ -1,40 +1,26 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import http from 'http';
+
+type RequestHandler = (req: http.IncomingMessage, res: http.ServerResponse) => void;
 
 class MohammadExpress {
-  private app: Application;
+  private routes: { [path: string]: RequestHandler } = {};
 
-  constructor() {
-    this.app = express();
-    this.initializeMiddlewares();
-  }
-
-  private initializeMiddlewares() {
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-  }
-
-  public use(middleware: (req: Request, res: Response, next: NextFunction) => void) {
-    this.app.use(middleware);
-  }
-
-  public get(path: string, handler: (req: Request, res: Response) => void) {
-    this.app.get(path, handler);
-  }
-
-  public post(path: string, handler: (req: Request, res: Response) => void) {
-    this.app.post(path, handler);
-  }
-
-  public put(path: string, handler: (req: Request, res: Response) => void) {
-    this.app.put(path, handler);
-  }
-
-  public delete(path: string, handler: (req: Request, res: Response) => void) {
-    this.app.delete(path, handler);
+  public get(path: string, handler: RequestHandler) {
+    this.routes[path] = handler;
   }
 
   public listen(port: number, callback: () => void) {
-    this.app.listen(port, callback);
+    const server = http.createServer((req, res) => {
+      const routeHandler = this.routes[req.url];
+      if (routeHandler) {
+        routeHandler(req, res);
+      } else {
+        res.writeHead(404);
+        res.end('Not Found');
+      }
+    });
+
+    server.listen(port, callback);
   }
 }
 
