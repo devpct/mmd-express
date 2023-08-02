@@ -2,10 +2,9 @@ import { Request } from './request';
 import { Response } from './response';
 import { Middleware } from './middleware/middleware';
 import * as path from 'path';
-import * as fs from 'fs'
+import * as fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as http from 'node:http';
-
 
 type RouteCallback = (
     req: Request,
@@ -28,14 +27,13 @@ export class Router {
     private middlewares: ((req: Request, res: Response, next: () => void) => void)[] = [];
 
     constructor() {
-        this._server = http.createServer(async(
-            req: http.IncomingMessage, 
-            res: http.ServerResponse
-        ) => {
+        this._server = http.createServer(async(req: http.IncomingMessage, res: http.ServerResponse) => {
             const response = new Response(res);
             const request = new Request(req);
-
+    
+            console.log('Received a request:', req.url); 
             await request.readRequestBody();
+            this.handleRequest(req, res);
         });
     }
 
@@ -43,15 +41,15 @@ export class Router {
         this.middlewares.push(middleware);
     }
 
-    get(path: string, callback: RouteCallback) {
+    get(path: string, callback: RouteCallback) {    
         this.routes['GET'][path] = callback;
     }
-
-    post(path: string, callback: RouteCallback) {
+    
+    post(path: string, callback: RouteCallback) {    
         this.routes['POST'][path] = callback;
     }
 
-    handleRequest(req: IncomingMessage, res: ServerResponse) {
+    handleRequest(req: IncomingMessage, res: ServerResponse) { // Fix: Update the arguments to match the constructor
         const request = new Request(req);
         const response = new Response(res);
 
@@ -83,14 +81,13 @@ export class Router {
     }
 
     listen(port: number, callback: () => void) {
-        const http = require('http');
-        const server = http.createServer(this.handleRequest.bind(this));
-        server.listen(port, callback);
+        this._server.listen(port, callback);
     }
 
     staticFile(folderPath: string) {
         this.get('/static/', (req: Request, res: Response) => {
             const fileName = req.params['file'];
+            console.log('Requested static file:', fileName); 
             fs.readFile(path.join(folderPath, fileName), (err, data) => {
                 if (err) {
                     console.log(err);
@@ -105,6 +102,7 @@ export class Router {
 export const router = (): Router => {
     return new Router();
 };
+
 const app = router();
 
 app.use((req: Request, res: Response, next: () => void) => {
@@ -118,21 +116,6 @@ app.use(Middleware.logRequest);
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello from mmdexpress!');
 });
-
-// Static file serving
-function staticFile(folderPath: string, req: Request, res: Response) {
-    const fileName = req.params['file'];
-    fs.readFile(path.join(folderPath, fileName), (err, data) => {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        res.send(data.toString());
-    });
-}
-
-const publicFolder = path.join(__dirname, 'public');
-app.get('/static/:file', staticFile.bind(null, publicFolder));
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
