@@ -1,6 +1,6 @@
 {
   "name": "mmdexpress",
-  "version": "2.2.3",
+  "version": "2.2.6",
   "description": "mmd express for all",
   "main": "./lib/app.js",
   "types": "./lib/app.d.ts",
