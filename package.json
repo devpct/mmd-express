@@ -1,12 +1,13 @@
 {
   "name": "mmdexpress",
-  "version": "2.0.3",
+  "version": "2.0.9",
   "description": "mmd express for all",
-  "main": "index.js",
+  "main": "./lib/app.js",
+  "types": "./lib/app.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node ./src/index.ts",
-    "dev": "nodemon ./src/index.ts"
+    "start": "ts-node ./src/app.ts",
+    "dev": "nodemon ./src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,14 @@
   "homepage": "https://github.com/devpct/mmd-express#readme",
   "keywords": [],
   "author": "Mohammad Abdollahzadeh",
-  "license": "ISC",
+  "license": "MIT",
+  "files": [
+    "lib/**/*"
+  ],
   "dependencies": {
+    "@types/body-parser": "^1.19.2",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6" 
   }
 }

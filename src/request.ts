@@ -1,20 +1,15 @@
 import { IncomingMessage } from 'node:http';
 import * as uri from 'url';
 import * as qs from 'querystring';
-import IRequest from '../interfaces/interfaceRequest';
 
-export default class Request implements IRequest {
+export class Request {
     method: string;
     url: string;
-
-    headers: { 
-        [key: string]: string | string[] | undefined
-    };
-
+    headers: { [key: string]: string | string[] | undefined };
     params: any;
     query: any;
     body: any;
-    
+
     constructor(public request: IncomingMessage) {
         this.method = request.method || '';
         this.url = request.url || '';
@@ -25,10 +20,9 @@ export default class Request implements IRequest {
         this.params = parsedUrl.query;
         this.query = parsedUrl.query;
 
-        
         this.readRequestBody()
             .then((body) => {
-                this.body = body;  
+                this.body = body;
             })
             .catch((err) => {
                 console.error('Error parsing request body:', err);
