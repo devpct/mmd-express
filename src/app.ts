@@ -1,6 +1,6 @@
 import { Request } from './request';
 import { Response } from './response';
-import { Middleware } from './middleware/middleware';
+import { middleware } from './middleware/middleware';
 import * as path from 'path';
 import * as fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
@@ -49,7 +49,7 @@ export class Router {
         this.routes['POST'][path] = callback;
     }
 
-    handleRequest(req: IncomingMessage, res: ServerResponse) { // Fix: Update the arguments to match the constructor
+    handleRequest(req: IncomingMessage, res: ServerResponse) {
         const request = new Request(req);
         const response = new Response(res);
 
@@ -92,6 +92,7 @@ export class Router {
                 if (err) {
                     console.log(err);
                     return;
+                    return;
                 }
                 res.send(data.toString());
             });
@@ -111,7 +112,7 @@ app.use((req: Request, res: Response, next: () => void) => {
     next();
 });
 
-app.use(Middleware.logRequest);
+app.use(middleware.logRequest);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello from mmdexpress!');
