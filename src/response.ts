@@ -1,45 +1,45 @@
 import { ServerResponse } from 'node:http';
 
-export class Response {
-    constructor(public response: ServerResponse) {}
+export interface Response {
+    response: ServerResponse;
+}
 
-    status(code: number): Response {
-        this.response.statusMessage = this.getStatusMessage(code);
-        this.response.statusCode = code;
-        return this;
-    }
+export function status(response: Response, code: number): Response {
+    response.response.statusMessage = getStatusMessage(code);
+    response.response.statusCode = code;
+    return response;
+}
 
-    send(body: string): void {
-        this.response.writeHead(this.response.statusCode, {
-            'Content-Type': 'text/html'
-        });
-        this.response.end(body);
-    }
+export function send(response: Response, body: string): void {
+    response.response.writeHead(response.response.statusCode, {
+        'Content-Type': 'text/html'
+    });
+    response.response.end(body);
+}
 
-    json(body: object): void {
-        this.response.writeHead(this.response.statusCode, {
-            'Content-Type': 'application/json'
-        });
-        this.response.end(JSON.stringify(body));
-    }
+export function json(response: Response, body: object): void {
+    response.response.writeHead(response.response.statusCode, {
+        'Content-Type': 'application/json'
+    });
+    response.response.end(JSON.stringify(body));
+}
 
-    redirect(url: string): void {
-        this.response.writeHead(302, {
-            'Location': url,
-        });
-        this.response.end();
-    }
+export function redirect(response: Response, url: string): void {
+    response.response.writeHead(302, {
+        'Location': url,
+    });
+    response.response.end();
+}
 
-    private getStatusMessage(code: number): string {
-        // You can implement your own status messages for different status codes
-        switch (code) {
-            case 200:
-                return 'OK';
-            case 201:
-                return 'Created';
-            // Add other status messages here
-            default:
-                return '';
-        }
+function getStatusMessage(code: number): string {
+    // You can implement your own status messages for different status codes
+    switch (code) {
+        case 200:
+            return 'OK';
+        case 201:
+            return 'Created';
+        // Add other status messages here
+        default:
+            return '';
     }
 }
