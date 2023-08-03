@@ -5,7 +5,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as urlPattern from 'url-pattern';
-import * as url from 'url';
 
 type RouteCallback = (
     req: Request,
@@ -143,21 +142,21 @@ async function startServer() {
         next();
     });
 
-    app.get('/get', (req: Request, res: Response) => {
-        res.send('Hello from mmdexpress!');
-    });
+    // app.get('/get', (req: Request, res: Response) => {
+    //     res.send('Hello from mmdexpress!');
+    // });
 
-    app.post('/post', (req: Request, res: Response) => {
-        res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
-    });
+    // app.post('/post', (req: Request, res: Response) => {
+    //     res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
+    // });
 
-    app.put('/put', (req: Request, res: Response) => {
-        res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`);
-    });
+    // app.put('/put', (req: Request, res: Response) => {
+    //     res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`);
+    // });
     
-    app.delete('/delete', (req: Request, res: Response) => {
-        res.json(req.params);
-    })
+    // app.delete('/delete', (req: Request, res: Response) => {
+    //     res.json(req.params);
+    // })
 
 
     app.listen(3000, () => {
