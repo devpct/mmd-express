@@ -1,4 +1,4 @@
-import { IncomingMessage } from 'http';
+import { IncomingMessage } from 'node:http';
 import * as uri from 'url';
 import * as qs from 'querystring';
 
@@ -19,6 +19,21 @@ export class Request {
 
         this.params = parsedUrl.query;
         this.query = parsedUrl.query;
+
+        this.query = {};
+        const queryParams = parsedUrl.query;
+        for (const key in queryParams) {
+            if (Object.prototype.hasOwnProperty.call(queryParams, key)) {
+                this.query[key] = queryParams[key];
+            }
+        }
+
+        const urlParts = this.url.split('/');
+        urlParts.shift();
+        this.params = {};
+        for (let i = 0; i < urlParts.length; i += 2) {
+            this.params[urlParts[i]] = urlParts[i + 1];
+        }
     }
 
     get body(): any {
@@ -57,4 +72,3 @@ export class Request {
         });
     }
 }
-

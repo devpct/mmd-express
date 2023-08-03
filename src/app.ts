@@ -48,6 +48,10 @@ export class MmdExpress {
         this.routes['POST'][path] = callback;
     }
 
+    put(path: string, callback: RouteCallback) {    
+        this.routes['PUT'][path] = callback;
+    }
+
     async handleRequest(req: IncomingMessage, res: ServerResponse) {
         const request = new Request(req);
         const response = new Response(res);
@@ -79,7 +83,9 @@ export class MmdExpress {
             }
         };
     
-        await request.readRequestBody();
+ 
+            await request.readRequestBody();
+    
         runMiddleware();
     }
     
@@ -116,13 +122,21 @@ async function startServer() {
         next();
     });
 
-    app.get('/', (req: Request, res: Response) => {
+    app.get('/get', (req: Request, res: Response) => {
         res.send('Hello from mmdexpress!');
     });
 
-    app.post('/mmd', (req: Request, res: Response) => {
+    app.post('/post', (req: Request, res: Response) => {
         res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
     });
+
+    app.put('/put', (req: Request, res: Response) => {
+        const param = req.params;
+        console.log(param);
+        res.json(param);
+    });
+      
+
 
     app.listen(3000, () => {
         console.log('Server is running on port 3000');

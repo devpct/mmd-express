@@ -1,43 +1,47 @@
-import { ServerResponse } from 'http';
+import { ServerResponse } from 'node:http';
 
 export class Response {
-    constructor(public response: ServerResponse) {}
+    private _statusCode: number;
+    private _headers: { [key: string]: string | string[] } = {};
+    private _body: any;
+    private _isResponseSent: boolean = false;
 
-    status(code: number): Response {
-        this.response.statusMessage = this.getStatusMessage(code);
-        this.response.statusCode = code;
+    constructor(private response: ServerResponse) {
+        this._statusCode = 200;
+    }
+
+    status(code: number): this {
+        this._statusCode = code;
         return this;
     }
 
-    send(body: string): void {
-        this.response.writeHead(this.response.statusCode, {
-            'Content-Type': 'text/html'
-        });
-        this.response.end(body);
-    }
-
-    json(body: object): void {
-        this.response.writeHead(this.response.statusCode, {
-            'Content-Type': 'application/json'
-        });
-        this.response.end(JSON.stringify(body));
-    }
-
-    redirect(url: string): void {
-        this.response.writeHead(302, {
-            'Location': url,
-        });
-        this.response.end();
-    }
-
-    private getStatusMessage(code: number): string {
-        switch (code) {
-            case 200:
-                return 'OK';
-            case 201:
-                return 'Created';
-            default:
-                return '';
+    send(data: any): void {
+        if (this._isResponseSent) {
+            throw new Error('Response has already been sent.');
         }
+
+        this._body = data;
+        this._sendResponse();
+    }
+
+    json(data: any): void {
+        this.setHeader('Content-Type', 'application/json');
+        this.send(JSON.stringify(data));
+    }
+
+    setHeader(key: string, value: string | string[]): this {
+        this._headers[key.toLowerCase()] = value;
+        return this;
+    }
+
+    private _sendResponse(): void {
+        if (this._isResponseSent) {
+            return;
+        }
+
+        this._isResponseSent = true;
+
+        this.response.writeHead(this._statusCode, this._headers);
+        this.response.end(this._body);
     }
 }
