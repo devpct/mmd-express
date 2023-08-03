@@ -16,23 +16,27 @@ export class Request {
         this.headers = Object.assign({}, request.headers) || {};
 
         const parsedUrl = uri.parse(this.url, true);
-
-        this.params = parsedUrl.query;
-        this.query = parsedUrl.query;
-
-        this.query = {};
-        const queryParams = parsedUrl.query;
-        for (const key in queryParams) {
-            if (Object.prototype.hasOwnProperty.call(queryParams, key)) {
-                this.query[key] = queryParams[key];
-            }
-        }
+        this.query = qs.parse(qs.stringify(parsedUrl.query));
 
         const urlParts = this.url.split('/');
         urlParts.shift();
-        this.params = {};
+
+        const regex = /(\w+)=(\w+)/g;
+        let match;
+
+        this.params = {}; 
+
+        const queryString = uri.format({ query: parsedUrl.query });
+        while ((match = regex.exec(queryString)) !== null) {
+            const key = match[1];
+            const value = match[2];
+            this.params[key] = value;
+        }
+
         for (let i = 0; i < urlParts.length; i += 2) {
-            this.params[urlParts[i]] = urlParts[i + 1];
+            const key = urlParts[i];
+            const value = urlParts[i + 1];
+            this.params[key] = value;
         }
     }
 

@@ -1,9 +1,11 @@
+import * as http from 'node:http';
 import { Request } from './request';
 import { Response } from './response';
 import * as path from 'path';
 import * as fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
-import * as http from 'node:http';
+import * as urlPattern from 'url-pattern';
+import * as url from 'url';
 
 type RouteCallback = (
     req: Request,
@@ -52,16 +54,20 @@ export class MmdExpress {
         this.routes['PUT'][path] = callback;
     }
 
+    delete(path: string, callback: RouteCallback) {    
+        this.routes['DELETE'][path] = callback;
+    }
+
     async handleRequest(req: IncomingMessage, res: ServerResponse) {
         const request = new Request(req);
         const response = new Response(res);
-    
+
         // Define the next function to be passed to middlewares
         const next = () => {
             currentMiddlewareIndex++;
             runMiddleware();
         };
-    
+
         // Execute middleware stack before handling the request
         let currentMiddlewareIndex = 0;
         const runMiddleware = () => {
@@ -70,23 +76,38 @@ export class MmdExpress {
                 currentMiddleware(request, response, next);
             } else {
                 // All middleware functions have been executed, handle the request
-                const method = req.method || 'GET';
-                const url = req.url || '';
-    
-                const routeCallback = this.routes[method][url];
+                const method = req.method ?? 'GET';
+                const url = req.url ?? '';
+
+                const routeCallback = this.findRouteCallback(method, url);
                 if (routeCallback) {
-                    routeCallback(request, response);
+                    try {
+                        routeCallback(request, response);
+                    } catch (error) {
+                        response.status(500).json({ message: 'Internal server error' });
+                        console.error('Error: ', error);
+                    }
                 } else {
                     // Handle 404 Not Found
                     response.status(404).send('Not Found');
                 }
             }
         };
-    
- 
-            await request.readRequestBody();
-    
+
+        await request.readRequestBody();
+
         runMiddleware();
+    }
+
+    findRouteCallback(method: string, url: string): RouteCallback | undefined {
+        const routeMap = this.routes[method];
+        if (!routeMap) return undefined;
+
+        const urlPath = url.split('?')[0];
+        const pattern = new urlPattern(urlPath);
+        const matchingPath = Object.keys(routeMap).find(path => pattern.match(path));
+
+        return matchingPath ? routeMap[matchingPath] : undefined;
     }
     
 
@@ -131,11 +152,12 @@ async function startServer() {
     });
 
     app.put('/put', (req: Request, res: Response) => {
-        const param = req.params;
-        console.log(param);
-        res.json(param);
+        res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`);
     });
-      
+    
+    app.delete('/delete', (req: Request, res: Response) => {
+        res.json(req.params);
+    })
 
 
     app.listen(3000, () => {
