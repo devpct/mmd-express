@@ -1,6 +1,8 @@
 import { Request } from '../request';
-import { Response, send } from '../response';
+import { Response } from '../response';
 
-export function index(req: Request, res: Response): void {
-    send(res, 'Hello World');
+export class homeController {
+    static index(req: Request, res: Response): void {
+        res.send('Hello World');
+    }
 }

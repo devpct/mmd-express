@@ -1,9 +1,9 @@
-import * as http from 'node:http';
-import { Request, createRequest } from './request';
-import { Response, status, send, json } from './response';
-import { logRequest } from './middleware/middleware';
+import { Request } from './request';
+import { Response } from './response';
 import * as path from 'path';
 import * as fs from 'fs';
+import { IncomingMessage, ServerResponse } from 'http';
+import * as http from 'node:http';
 
 type RouteCallback = (
     req: Request,
@@ -14,97 +14,119 @@ interface RouteMap {
     [path: string]: RouteCallback;
 }
 
-const routes: Record<string, RouteMap> = {
-    'GET': {},
-    'POST': {},
-    'PUT': {},
-    'DELETE': {},
+export class MmdExpress {
+    private _server: http.Server;
+    private routes: Record<string, RouteMap> = {
+        'GET': {},
+        'POST': {},
+        'PUT': {},
+        'DELETE': {},
+    };
+    
+    private middlewares: ((req: Request, res: Response, next: () => void) => void)[] = [];
+
+    constructor() {
+        this._server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
+            const response = new Response(res);
+            const request = new Request(req);
+    
+            console.log('Received a request:', req.url);
+            // await request.readRequestBody();
+            this.handleRequest(req, res);
+        });
+    }
+
+    use(middleware: (req: Request, res: Response, next: () => void) => void) {
+        this.middlewares.push(middleware);
+    }
+
+    get(path: string, callback: RouteCallback) {    
+        this.routes['GET'][path] = callback;
+    }
+    
+    post(path: string, callback: RouteCallback) {    
+        this.routes['POST'][path] = callback;
+    }
+
+    async handleRequest(req: IncomingMessage, res: ServerResponse) {
+        const request = new Request(req);
+        const response = new Response(res);
+    
+        // Define the next function to be passed to middlewares
+        const next = () => {
+            currentMiddlewareIndex++;
+            runMiddleware();
+        };
+    
+        // Execute middleware stack before handling the request
+        let currentMiddlewareIndex = 0;
+        const runMiddleware = () => {
+            if (currentMiddlewareIndex < this.middlewares.length) {
+                const currentMiddleware = this.middlewares[currentMiddlewareIndex];
+                currentMiddleware(request, response, next);
+            } else {
+                // All middleware functions have been executed, handle the request
+                const method = req.method || 'GET';
+                const url = req.url || '';
+    
+                const routeCallback = this.routes[method][url];
+                if (routeCallback) {
+                    routeCallback(request, response);
+                } else {
+                    // Handle 404 Not Found
+                    response.status(404).send('Not Found');
+                }
+            }
+        };
+    
+        await request.readRequestBody();
+        runMiddleware();
+    }
+    
+
+    listen(port: number, callback: () => void) {
+        this._server.listen(port, callback);
+    }
+
+    staticFile(folderPath: string) {
+        this.get('/static/', (req: Request, res: Response) => {
+            const fileName = req.params['file'];
+            console.log('Requested static file:', fileName); 
+            fs.readFile(path.join(folderPath, fileName), (err, data) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                res.send(data.toString());
+            });
+        });
+    }
+}
+
+export const mmdExpress = (): MmdExpress => {
+    return new MmdExpress();
 };
 
-const middlewares: ((req: Request, res: Response, next: () => void) => void)[] = [];
+async function startServer() {
+    const app = mmdExpress();
 
-const server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
-    const request = await createRequest(req);
-    const response: Response = { response: res };
+    app.use((req: Request, res: Response, next: () => void) => {
+        // Middleware example
+        console.log('Middleware is running!');
+        next();
+    });
 
-    console.log('Received a request:', req.url);
-    handleRequest(request, response);
-});
+    app.get('/', (req: Request, res: Response) => {
+        res.send('Hello from mmdexpress!');
+    });
 
-function use(middleware: (req: Request, res: Response, next: () => void) => void) {
-    middlewares.push(middleware);
-}
+    app.post('/mmd', (req: Request, res: Response) => {
+        res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
+    });
 
-function get(path: string, callback: RouteCallback) {
-    routes['GET'][path] = callback;
-}
-
-function post(path: string, callback: RouteCallback) {
-    routes['POST'][path] = callback;
-}
-
-function handleRequest(req: Request, res: Response) {
-    // Execute middleware stack before handling the request
-    let currentMiddlewareIndex = 0;
-    const runMiddleware = () => {
-        if (currentMiddlewareIndex < middlewares.length) {
-            const currentMiddleware = middlewares[currentMiddlewareIndex];
-            currentMiddleware(req, res, () => {
-                currentMiddlewareIndex++;
-                runMiddleware();
-            });
-        } else {
-            // All middleware functions have been executed, handle the request
-            const method = req.method || 'GET';
-            const url = req.url || '';
-
-            const routeCallback = routes[method][url];
-            if (routeCallback) {
-                routeCallback(req, res);
-            } else {
-                // Handle 404 Not Found
-                status(res, 404);
-                send(res, 'Not Found');
-            }
-        }
-    };
-
-    runMiddleware();
-}
-
-function listen(port: number, callback: () => void) {
-    server.listen(port, callback);
-}
-
-function staticFile(folderPath: string) {
-    get('/static/', (req: Request, res: Response) => {
-        const fileName = req.params['file'];
-        console.log('Requested static file:', fileName);
-        fs.readFile(path.join(folderPath, fileName), (err, data) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            send(res, data.toString());
-        });
+    app.listen(3000, () => {
+        console.log('Server is running on port 3000');
     });
 }
 
-export {
-    use,
-    get,
-    post,
-    handleRequest,
-    listen,
-    staticFile,
-};
-
-use(logRequest);
-
-get('/', (req: Request, res: Response) => {
-    send(res, 'Hello from mmdexpress!');
-});
-
-listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+startServer();
