@@ -28,11 +28,6 @@ export class MmdExpress {
 
     constructor() {
         this._server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
-            const response = new Response(res)
-            const request = new Request(req)
-    
-            console.log('Received a request:', req.url)
-            // await request.readRequestBody()
             this.handleRequest(req, res)
         })
     }
@@ -117,7 +112,6 @@ export class MmdExpress {
     staticFile(folderPath: string) {
         this.get('/static/', (req: Request, res: Response) => {
             const fileName = req.params['file']
-            console.log('Requested static file:', fileName) 
             fs.readFile(path.join(folderPath, fileName), (err, data) => {
                 if (err) {
                     console.log(err)
