@@ -146,6 +146,22 @@ export const mmdExpress = (): MmdExpress => {
 //         res.send('Hello from mmdexpress!');
 //     });
 
+//     app.get('/json', (req , res) => {
+//         const jsonData = { message: 'Hello, this is a JSON response!' }
+//         res.json(jsonData)
+//     })
+
+//     app.get('/redirect', (req , res) => {
+//         setTimeout(() => {
+//           res.redirect('/get')
+//         }, 3000)
+//     })
+
+//     app.get('/static', (req, res) => {
+//         const staticFolderPath = path.join(__dirname, './public/index.html');
+//         res.sendFile(staticFolderPath)
+//     })
+    
 //     app.post('/post', (req: Request, res: Response) => {
 //         res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
 //     });
@@ -158,20 +174,9 @@ export const mmdExpress = (): MmdExpress => {
 //         res.json(req.params);
 //     })
 
-//     app.get('/json', (req , res) => {
-//         const jsonData = { message: 'Hello, this is a JSON response!' }
-//         res.json(jsonData)
-//     })
-
-//     app.get('/redirect', (req , res) => {
-//         setTimeout(() => {
-//           res.redirect('/get')
-//         }, 3000)
-//     })
-
 //     app.listen(3000, () => {
 //         console.log('Server is running on port 3000');
 //     });
 // }
 
-// startServer();
+// startServer()

@@ -1,5 +1,5 @@
 import { ServerResponse } from 'node:http';
-
+import * as fs from 'fs';
 export class Response {
     private _statusCode: number;
     private _headers: { [key: string]: string | string[] } = {};
@@ -14,7 +14,7 @@ export class Response {
         this.setHeader('Location', url);
         this.status(302).send('Redirecting...');
     }
-    
+
     constructor(private response: ServerResponse) {
         this._statusCode = 200;
     }
@@ -41,6 +41,19 @@ export class Response {
     setHeader(key: string, value: string | string[]): this {
         this._headers[key.toLowerCase()] = value;
         return this;
+    }
+
+    sendFile(filePath: string): void {
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                console.error(err);
+                this.status(500).send('Internal Server Error');
+                return;
+            }
+
+            this.setHeader('Content-Type', 'text/html');
+            this.send(data);
+        });
     }
 
     private _sendResponse(): void {
