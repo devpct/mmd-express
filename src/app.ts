@@ -133,35 +133,45 @@ export const mmdExpress = (): MmdExpress => {
     return new MmdExpress();
 };
 
-async function startServer() {
-    const app = mmdExpress();
+// async function startServer() {
+//     const app = mmdExpress();
 
-    app.use((req: Request, res: Response, next: () => void) => {
-        // Middleware example
-        console.log('Middleware is running!');
-        next();
-    });
+//     app.use((req: Request, res: Response, next: () => void) => {
+//         // Middleware example
+//         console.log('Middleware is running!');
+//         next();
+//     });
 
-    // app.get('/get', (req: Request, res: Response) => {
-    //     res.send('Hello from mmdexpress!');
-    // });
+//     app.get('/get', (req: Request, res: Response) => {
+//         res.send('Hello from mmdexpress!');
+//     });
 
-    // app.post('/post', (req: Request, res: Response) => {
-    //     res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
-    // });
+//     app.post('/post', (req: Request, res: Response) => {
+//         res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`);
+//     });
 
-    // app.put('/put', (req: Request, res: Response) => {
-    //     res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`);
-    // });
+//     app.put('/put', (req: Request, res: Response) => {
+//         res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`);
+//     });
     
-    // app.delete('/delete', (req: Request, res: Response) => {
-    //     res.json(req.params);
-    // })
+//     app.delete('/delete', (req: Request, res: Response) => {
+//         res.json(req.params);
+//     })
 
+//     app.get('/json', (req , res) => {
+//         const jsonData = { message: 'Hello, this is a JSON response!' }
+//         res.json(jsonData)
+//     })
 
-    app.listen(3000, () => {
-        console.log('Server is running on port 3000');
-    });
-}
+//     app.get('/redirect', (req , res) => {
+//         setTimeout(() => {
+//           res.redirect('/get')
+//         }, 3000)
+//     })
 
-startServer();
+//     app.listen(3000, () => {
+//         console.log('Server is running on port 3000');
+//     });
+// }
+
+// startServer();
