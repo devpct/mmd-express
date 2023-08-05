@@ -16,6 +16,7 @@ npm i mmdexpress
 ```javascript
 const { mmdExpress } = require('mmdexpress')
 const path = require('path')
+const Joi = require('joi')
 
 const app = mmdExpress()
 
@@ -50,6 +51,19 @@ const app = mmdExpress()
       res.send(`Received a POST request with body:  ${JSON.stringify(req.body)}`)
   })
 
+  const userSchema = Joi.object({
+    name: Joi.string().min(3).required(),
+    age: Joi.number().integer().min(0).required(),
+    email: Joi.string().email().required()
+  });
+
+  const userCallback = (req, res) => {
+      const userData = req.body;
+      res.json({ message: 'User created successfully!', data: userData });
+  };
+
+  app.post('/validation', userCallback, { bodySchema: userSchema });
+
   app.put('/put', (req, res) => {
       res.send(`params : ${JSON.stringify(req.params)} Received a POST request with body: ${JSON.stringify(req.body)}`)
   })
@@ -66,7 +80,7 @@ const app = mmdExpress()
     res.sendFile(staticFolderPath)
   })
 
-app.listen(3000, () => {
+app.listen(5000, () => {
   console.log('server started')
 })
 ```
