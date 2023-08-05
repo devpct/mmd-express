@@ -33,7 +33,7 @@ export class Request {
             this.params[key] = value
         }
 
-        for (let i = 0 i < urlParts.length i += 2) {
+        for (let i = 0 ; i < urlParts.length ; i += 2) {
             const key = urlParts[i]
             const value = urlParts[i + 1]
             this.params[key] = value
