@@ -5,6 +5,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { IncomingMessage, ServerResponse } from 'http'
 import * as urlPattern from 'url-pattern'
+import * as Joi from 'joi';
 
 type RouteCallback = (
     req: Request,
@@ -40,8 +41,12 @@ export class MmdExpress {
         this.routes['GET'][path] = callback
     }
     
-    post(path: string, callback: RouteCallback) {    
-        this.routes['POST'][path] = callback
+    post(path: string, callback: RouteCallback, options?: { bodySchema?: Joi.Schema }) {
+        if (options && options.bodySchema) {
+            this.routes['POST'][path] = this.validateBodySchema(options.bodySchema, callback);
+        } else {
+            this.routes['POST'][path] = callback;
+        }
     }
 
     put(path: string, callback: RouteCallback) {    
@@ -121,6 +126,17 @@ export class MmdExpress {
             })
         })
     }
+
+    private validateBodySchema(schema: Joi.Schema, routeCallback: RouteCallback): RouteCallback {
+        return async (req: Request, res: Response) => {
+            const validationResult = schema.validate(req.body);
+            if (validationResult.error) {
+                res.status(400).json({ message: validationResult.error.details[0].message });
+            } else {
+                routeCallback(req, res);
+            }
+        };
+    }
 }
 
 export const mmdExpress = (): MmdExpress => {
@@ -170,6 +186,19 @@ export const mmdExpress = (): MmdExpress => {
 //         res.json(req.params)
 //     })
 
+//     const userSchema = Joi.object({
+//         name: Joi.string().min(3).required(),
+//         age: Joi.number().integer().min(0).required(),
+//         email: Joi.string().email().required()
+//     });
+    
+//     const userCallback = (req: Request, res: Response) => {
+//         const userData = req.body;
+//         res.json({ message: 'User created successfully!', data: userData });
+//     };
+    
+//     app.post('/validation', userCallback, { bodySchema: userSchema });
+    
 //     app.listen(3000, () => {
 //         console.log('Server is running on port 3000')
 //     })

@@ -1,6 +1,6 @@
 {
   "name": "mmdexpress",
-  "version": "2.3.7",
+  "version": "2.3.8",
   "description": "mmd express for all",
   "main": "./lib/app.js",
   "types": "./lib/app.d.ts",
@@ -25,6 +25,7 @@
   ],
   "dependencies": {
     "@types/body-parser": "^1.19.2",
+    "joi": "^17.9.2",
     "mmdexpress": "^2.3.3",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
