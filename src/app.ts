@@ -158,7 +158,9 @@ export const mmdExpress = (): MmdExpress => {
 //     })
 
 //     app.get('/static', (req, res) => {
-//         const staticFolderPath = path.join(__dirname, './public/index.html')
+//         const file = req.query.file
+//         console.log(file)
+//         const staticFolderPath = path.join(__dirname, `./public/${file}`)
 //         res.sendFile(staticFolderPath)
 //     })
     
